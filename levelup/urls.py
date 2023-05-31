@@ -28,6 +28,7 @@ router.register(r'games', GameView, 'game')
 router.register(r'gamers', GamerView, 'gamer')
 
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
