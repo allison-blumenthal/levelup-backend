@@ -97,7 +97,7 @@ class EventView(ViewSet):
       
       gamer = Gamer.objects.get(uid=request.data["userId"])
       event = Event.objects.get(pk=pk)
-      EventGamer.objects.create(
+      event_gamer = EventGamer.objects.create(
           gamer=gamer,
           event=event
       )
@@ -109,8 +109,11 @@ class EventView(ViewSet):
       
       gamer = Gamer.objects.get(uid=request.data["userId"])
       event = Event.objects.get(pk=pk)
-      event_gamer_obj = EventGamer.objects.get(user_id=request.data["gamer"])
-      event_gamer_obj.remove()
+      event_gamer = EventGamer.objects.get(
+        event_id=event.id,
+        gamer_id = gamer.id
+        )
+      event_gamer.delete()
       return Response(None, status=status.HTTP_204_NO_CONTENT)
       
         
