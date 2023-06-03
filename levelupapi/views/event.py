@@ -39,6 +39,14 @@ class EventView(ViewSet):
     if game is not None:
       events = events.filter(game_id=game)
       
+    uid = request.META['HTTP_AUTHORIZATION']
+    gamer = Gamer.objects.get(uid=uid)
+    
+    for event in events:
+      # Check to see if there is a row in the Event Games table that has the passed in gamer and event
+      event.joined = len(EventGamer.objects.filter(
+        gamer=gamer, event=event)) > 0
+      
     serializer = EventSerializer(events, many=True)
     return Response(serializer.data)
   
@@ -123,5 +131,5 @@ class EventSerializer(serializers.ModelSerializer):
   
   class Meta:
       model = Event
-      fields = ('id', 'game', 'description', 'date', 'time', 'organizer')
+      fields = ('id', 'game', 'description', 'date', 'time', 'organizer', 'joined')
       depth = 0
