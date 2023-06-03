@@ -3,12 +3,14 @@ from django.http import HttpResponseServerError
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers, status
-from levelupapi.models import Event, Gamer, Game
+from levelupapi.models import Event, Gamer, Game, EventGamer
+from rest_framework.decorators import action
 
 
 class EventView(ViewSet):
   """Level up event view"""
   
+  #get single event
   def retrieve(self, request, pk):
     """Handle GET requests for single event
     
@@ -23,7 +25,7 @@ class EventView(ViewSet):
     except Event.DoesNotExist as ex:
         return Response({'message': ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
       
-    
+  # get all events 
   def list(self, request):
     """Handle GET requests to get all events
     
@@ -40,6 +42,7 @@ class EventView(ViewSet):
     serializer = EventSerializer(events, many=True)
     return Response(serializer.data)
   
+  # create event
   def create(self, request):
     """Handle POST operations
     
@@ -58,7 +61,7 @@ class EventView(ViewSet):
     serializer = EventSerializer(event)
     return Response(serializer.data)
   
-  
+  # update event
   def update(self, request, pk):
     """Handle PUT requests for an event
     
@@ -80,11 +83,40 @@ class EventView(ViewSet):
     
     return Response(None, status=status.HTTP_204_NO_CONTENT)
   
+  # delete event
   def destroy(self, request, pk):
       event = Event.objects.get(pk=pk)
       event.delete()
       return Response(None, status=status.HTTP_204_NO_CONTENT)
   
+  
+  # allow gamer to join event
+  @action(methods=['post'], detail=True)
+  def signup(self, request, pk):
+      """Post request for a user to sign up for an event"""
+      
+      gamer = Gamer.objects.get(uid=request.data["userId"])
+      event = Event.objects.get(pk=pk)
+      event_gamer = EventGamer.objects.create(
+          gamer=gamer,
+          event=event
+      )
+      return Response({'message': 'Gamer added'}, status=status.HTTP_201_CREATED)
+    
+  @action(methods=['delete'], detail=True)
+  def leave(self, request, pk):
+      """Delete request for a user to leave an event"""
+      
+      gamer = Gamer.objects.get(uid=request.data["userId"])
+      event = Event.objects.get(pk=pk)
+      event_gamer = EventGamer.objects.get(
+        event_id=event.id,
+        gamer_id = gamer.id
+        )
+      event_gamer.delete()
+      return Response(None, status=status.HTTP_204_NO_CONTENT)
+      
+        
   
 class EventSerializer(serializers.ModelSerializer):
   """JSON serializer for events"""
@@ -92,4 +124,4 @@ class EventSerializer(serializers.ModelSerializer):
   class Meta:
       model = Event
       fields = ('id', 'game', 'description', 'date', 'time', 'organizer')
-      depth = 1
+      depth = 0

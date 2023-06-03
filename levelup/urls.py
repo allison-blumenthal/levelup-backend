@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.conf.urls import include
 from rest_framework import routers
-from levelupapi.views import GameTypeView, EventView, GameView, register_user, check_user, GamerView
+from levelupapi.views import GameTypeView, EventView, GameView, register_user, check_user, GamerView, EventGamerView
 from django.contrib import admin
 from django.urls import path
 
@@ -26,6 +26,7 @@ router.register(r'gametypes', GameTypeView, 'gametype')
 router.register(r'events', EventView, 'event')
 router.register(r'games', GameView, 'game')
 router.register(r'gamers', GamerView, 'gamer')
+router.register(r'eventgamers', EventGamerView, 'eventgamer')
 
 
 
