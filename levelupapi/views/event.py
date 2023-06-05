@@ -56,7 +56,7 @@ class EventView(ViewSet):
     
     Returns -- JSON serialized event instance"""
     
-    organizer = Gamer.objects.get(uid=request.data["userId"])
+    organizer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
     game = Game.objects.get(pk=request.data["game"])
     
     event = Event.objects.create(
@@ -83,7 +83,7 @@ class EventView(ViewSet):
     event.time = request.data["time"]
     
     game = Game.objects.get(pk=request.data["game"])
-    organizer = Gamer.objects.get(uid=request.data["userId"])
+    organizer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
     
     event.game = game
     event.organizer = organizer
@@ -103,7 +103,7 @@ class EventView(ViewSet):
   def signup(self, request, pk):
       """Post request for a user to sign up for an event"""
       
-      gamer = Gamer.objects.get(uid=request.data["userId"])
+      gamer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
       event = Event.objects.get(pk=pk)
       event_gamer = EventGamer.objects.create(
           gamer=gamer,
@@ -115,7 +115,7 @@ class EventView(ViewSet):
   def leave(self, request, pk):
       """Delete request for a user to leave an event"""
       
-      gamer = Gamer.objects.get(uid=request.data["userId"])
+      gamer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
       event = Event.objects.get(pk=pk)
       event_gamer = EventGamer.objects.get(
         event_id=event.id,
