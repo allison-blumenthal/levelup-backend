@@ -3,7 +3,7 @@ from django.http import HttpResponseServerError
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers, status
-from levelupapi.models import Event, Gamer, Game, EventGamer
+from levelupapi.models import Event, Gamer, Game , EventGamer
 from rest_framework.decorators import action
 
 
@@ -32,20 +32,19 @@ class EventView(ViewSet):
     Returns:
       Response -- JSON serialized list of events
     """
-    
+  
     events = Event.objects.all()
-    
     game = request.query_params.get('game', None)
     if game is not None:
       events = events.filter(game_id=game)
-      
+    
     uid = request.META['HTTP_AUTHORIZATION']
     gamer = Gamer.objects.get(uid=uid)
     
     for event in events:
       # Check to see if there is a row in the Event Games table that has the passed in gamer and event
       event.joined = len(EventGamer.objects.filter(
-        gamer=gamer, event=event)) > 0
+          gamer=gamer, event=event)) > 0
       
     serializer = EventSerializer(events, many=True)
     return Response(serializer.data)
@@ -56,8 +55,8 @@ class EventView(ViewSet):
     
     Returns -- JSON serialized event instance"""
     
-    organizer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
     game = Game.objects.get(pk=request.data["game"])
+    organizer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
     
     event = Event.objects.create(
       description=request.data["description"],
@@ -83,9 +82,8 @@ class EventView(ViewSet):
     event.time = request.data["time"]
     
     game = Game.objects.get(pk=request.data["game"])
-    organizer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
-    
     event.game = game
+    organizer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
     event.organizer = organizer
     event.save()
     
