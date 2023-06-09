@@ -39,6 +39,14 @@ class EventView(ViewSet):
     if game is not None:
       events = events.filter(game_id=game)
       
+    uid = request.META['HTTP_AUTHORIZATION']
+    gamer = Gamer.objects.get(uid=uid)
+    
+    for event in events:
+      # Check to see if there is a row in the Event Games table that has the passed in gamer and event
+      event.joined = len(EventGamer.objects.filter(
+        gamer=gamer, event=event)) > 0
+      
     serializer = EventSerializer(events, many=True)
     return Response(serializer.data)
   
@@ -48,7 +56,7 @@ class EventView(ViewSet):
     
     Returns -- JSON serialized event instance"""
     
-    organizer = Gamer.objects.get(uid=request.data["userId"])
+    organizer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
     game = Game.objects.get(pk=request.data["game"])
     
     event = Event.objects.create(
@@ -75,7 +83,7 @@ class EventView(ViewSet):
     event.time = request.data["time"]
     
     game = Game.objects.get(pk=request.data["game"])
-    organizer = Gamer.objects.get(uid=request.data["userId"])
+    organizer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
     
     event.game = game
     event.organizer = organizer
@@ -95,7 +103,7 @@ class EventView(ViewSet):
   def signup(self, request, pk):
       """Post request for a user to sign up for an event"""
       
-      gamer = Gamer.objects.get(uid=request.data["userId"])
+      gamer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
       event = Event.objects.get(pk=pk)
       event_gamer = EventGamer.objects.create(
           gamer=gamer,
@@ -107,7 +115,7 @@ class EventView(ViewSet):
   def leave(self, request, pk):
       """Delete request for a user to leave an event"""
       
-      gamer = Gamer.objects.get(uid=request.data["userId"])
+      gamer = Gamer.objects.get(uid=request.META['HTTP_AUTHORIZATION'])
       event = Event.objects.get(pk=pk)
       event_gamer = EventGamer.objects.get(
         event_id=event.id,
@@ -123,5 +131,5 @@ class EventSerializer(serializers.ModelSerializer):
   
   class Meta:
       model = Event
-      fields = ('id', 'game', 'description', 'date', 'time', 'organizer')
+      fields = ('id', 'game', 'description', 'date', 'time', 'organizer', 'joined')
       depth = 0
